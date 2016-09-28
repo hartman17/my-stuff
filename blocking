@@ -1,0 +1,71 @@
+SELECT B.INST_ID,
+         LPAD ('--->', DECODE (A.REQUEST, 0, 0, 5)) || A.SID SID,
+         A.ID1,
+         A.ID2,
+         A.LMODE,
+         A.BLOCK,
+         A.REQUEST,
+         DECODE (A.TYPE,
+                 'MR', 'Media Recovery',
+                 'RT', 'Redo Thread',
+                 'UN', 'User Name',
+                 'TX', 'Transaction',
+                 'TM', 'DML',
+                 'UL', 'PL/SQL User Lock',
+                 'DX', 'Distributed Xaction',
+                 'CF', 'Control File',
+                 'IS', 'Instance State',
+                 'FS', 'File Set',
+                 'IR', 'Instance Recovery',
+                 'ST', 'Disk Space Transaction',
+                 'TS', 'Temp Segment',
+                 'IV', 'Library Cache Invalidation',
+                 'LS', 'Log Start or Switch',
+                 'RW', 'Row Wait',
+                 'SQ', 'Sequence Number',
+                 'TE', 'Extend Table',
+                 'TT', 'Temp Table',
+                 A.TYPE)
+            LOCK_TYPE,
+         B.PROGRAM,
+         B.OSUSER,
+         B.USERNAME,
+         B.STATUS,
+         B.MODULE,
+         B.ACTION,
+         B.CLIENT_IDENTIFIER,
+         B.LOGON_TIME,
+         B.LAST_CALL_ET,
+         B.EVENT,
+            'ALTER SYSTEM KILL SESSION '
+         || ''''
+         || A.SID
+         || ', '
+         || B.SERIAL#
+         || ',@'
+         || B.INST_ID
+         || ''''
+         || ' IMMEDIATE;'
+            KILL_COMMAND,
+         DECODE (
+            OBJECT_TYPE,
+            NULL, NULL,
+               'Dbms_Rowid.rowid_create(1, '
+            || ROW_WAIT_OBJ#
+            || ', '
+            || ROW_WAIT_FILE#
+            || ', '
+            || ROW_WAIT_BLOCK#
+            || ', '
+            || ROW_WAIT_ROW#
+            || ')')
+            ROW_ID
+    FROM GV$LOCK A, GV$SESSION B, DBA_OBJECTS O
+   WHERE     (A.ID1, A.ID2) IN (SELECT ID1, ID2
+                                  FROM GV$LOCK
+                                 WHERE LMODE = 0)
+         AND A.INST_ID = B.INST_ID
+         AND A.SID = B.SID
+         AND O.OBJECT_ID(+) =
+                DECODE (B.ROW_WAIT_OBJ#, -1, NULL, B.ROW_WAIT_OBJ#)
+ORDER BY A.ID1, A.ID2, A.REQUEST;
