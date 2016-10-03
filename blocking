@@ -69,3 +69,5 @@ SELECT B.INST_ID,
          AND O.OBJECT_ID(+) =
                 DECODE (B.ROW_WAIT_OBJ#, -1, NULL, B.ROW_WAIT_OBJ#)
 ORDER BY A.ID1, A.ID2, A.REQUEST;
+
+--test
