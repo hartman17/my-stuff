@@ -71,3 +71,4 @@ SELECT B.INST_ID,
 ORDER BY A.ID1, A.ID2, A.REQUEST;
 
 --test
+--Copy and Paste the KILL Statement output and run to kill the blocker
